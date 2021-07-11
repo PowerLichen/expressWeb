@@ -5,8 +5,12 @@ const port = 3000
 var fs = require('fs');
 var path = require('path');
 var qs = require('qs');
+var bodyParser = require('body-parser')
 var sanitizeHtml = require('sanitize-html')
 var template = require('./lib/template.js')
+
+//서버 구동 시, middleware가 자동실행
+app.use(bodyParser.urlencoded({ extended: false }));
 
 //route main page
 app.get('/', function (req, res) {
@@ -69,19 +73,13 @@ app.get('/create', function (req, res) {
 });
 
 app.post('/create_process', function (req, res) {
-  var body = '';
-  req.on('data', function (data) {
-    body = body + data;
+  var post = req.body;
+  var title = post.title;
+  var description = post.description;
+  fs.writeFile(`data/${title}`, description, 'utf8', function (err) {
+    res.redirect(`/page/${title}`);
   });
-  req.on('end', function () {
-    var post = qs.parse(body);
-    var title = post.title;
-    var description = post.description;
-    fs.writeFile(`data/${title}`, description, 'utf8', function (err) {
-      res.redirect(`/page/${title}`)
-    });
-  });
-})
+});
 
 app.get('/update/:pageId', function (req, res) {
   fs.readdir('./data/', function (err, filelist) {
@@ -110,38 +108,26 @@ app.get('/update/:pageId', function (req, res) {
 });
 
 app.post('/update_process', function (req, res) {
-  var body = '';
-  req.on('data', function (data) {
-    body = body + data;
-  });
-  req.on('end', function () {
-    var post = qs.parse(body);
-    var id = post.id;
-    var filteredId = path.parse(id).base;
-    var title = post.title;
-    var description = post.description;
-    fs.rename(`data/${filteredId}`, `data/${title}`, function (err) {
-      fs.writeFile(`data/${title}`, description, 'utf8', function (err) {
-        res.redirect(`/page/${title}`);
-      });
-    })
+  var post = req.body;
+  var id = post.id;
+  var filteredId = path.parse(id).base;
+  var title = post.title;
+  var description = post.description;
+  fs.rename(`data/${filteredId}`, `data/${title}`, function (err) {
+    fs.writeFile(`data/${title}`, description, 'utf8', function (err) {
+      res.redirect(`/page/${title}`);
+    });
   });
 });
 
 app.post('/delete_process', function (req, res) {
-  var body = '';
-  req.on('data', function (data) {
-    body = body + data;
+  var post = req.body;
+  var id = post.id;
+  var filteredId = path.parse(id).base;
+  fs.unlink(`data/${filteredId}`, function (err) {
+    res.redirect('/');
   });
-  req.on('end', function () {
-    var post = qs.parse(body);
-    var id = post.id;
-    var filteredId = path.parse(id).base;
-    fs.unlink(`data/${filteredId}`, function (err) {
-      res.redirect('/');
-    });
-  });
-})
+});
 
 
 app.listen(port, function () {

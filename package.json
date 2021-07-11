@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/PowerLichen/expressWeb#readme",
   "dependencies": {
+    "express": "^4.17.1",
     "sanitize-html": "^2.4.0"
   }
 }

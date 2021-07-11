@@ -37,27 +37,30 @@ app.get('/', function (req, res) {
   res.send(html);
 });
 
-app.get('/page/:pageId/', function (req, res) {
+app.get('/page/:pageId/', function (req, res, next) {
   var filteredId = path.parse(req.params.pageId).base;
   fs.readFile(`data/${filteredId}`, 'utf8', function (err, description) {
-    var title = req.params.pageId;
-    var sanitizedTitle = sanitizeHtml(title);
-    var sanitizedDescription = sanitizeHtml(description, {
-      allowedTags: ['h1']
-    });
-    var list = template.list(req.list)
-    var html = template.HTML(sanitizedTitle, list,
-      `<h2>${sanitizedTitle}</h2><p>${sanitizedDescription}</p>`,
-      `
-        <a href="/create">create</a>
-        <a href="/update/${sanitizedTitle}">update</a>
-        <form action='/delete_process' method='post'>
-          <input type='hidden' name='id' value='${sanitizedTitle}'>
-          <input type='submit' value='delete'>
-        </form>
-        `
-    );
-    res.send(html);
+    if (err) {
+      next(err);
+    } else {
+      var title = req.params.pageId;
+      var sanitizedTitle = sanitizeHtml(title);
+      var sanitizedDescription = sanitizeHtml(description, {
+        allowedTags: ['h1']
+      });
+      var list = template.list(req.list)
+      var html = template.HTML(sanitizedTitle, list,
+        `<h2>${sanitizedTitle}</h2><p>${sanitizedDescription}</p>`,
+        ` <a href="/create">create</a>
+          <a href="/update/${sanitizedTitle}">update</a>
+          <form action='/delete_process' method='post'>
+            <input type='hidden' name='id' value='${sanitizedTitle}'>
+            <input type='submit' value='delete'>
+          </form>
+          `
+      );
+      res.send(html);
+    }
   });
 });
 
@@ -133,6 +136,14 @@ app.post('/delete_process', function (req, res) {
   });
 });
 
+app.use(function (req, res, next) {
+  res.status(404).send('Sorry cannot find that!');
+});
+
+app.use(function (err, req, res, next) {
+  console.error(err.stack)
+  res.status(500).send('Something broke!')
+})
 
 app.listen(port, function () {
   console.log(`App listening at http://localhost:${port}`);

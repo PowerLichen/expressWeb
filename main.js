@@ -6,11 +6,13 @@ var fs = require('fs');
 var path = require('path');
 var qs = require('qs');
 var bodyParser = require('body-parser')
+var compression = require('compression')
 var sanitizeHtml = require('sanitize-html')
 var template = require('./lib/template.js')
 
 //서버 구동 시, middleware가 자동실행
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(compression());
 
 //route main page
 app.get('/', function (req, res) {

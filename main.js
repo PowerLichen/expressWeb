@@ -11,6 +11,7 @@ var sanitizeHtml = require('sanitize-html')
 var template = require('./lib/template.js')
 
 //서버 구동 시, middleware가 자동실행
+app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(compression());
 //get 요청에 대해서만 미들웨어를 작동
@@ -27,7 +28,10 @@ app.get('/', function (req, res) {
   var description = "HELLO! Welcome my page!";
   var list = template.list(req.list);
   var html = template.HTML(title, list,
-    `<h2>${title}</h2><p>${description}</p>`,
+    `
+    <h2>${title}</h2><p>${description}</p>
+    <img src="/images/hello.jpg" style = "width:300px; display:block; margin-top:10px;">
+    `,
     '<a href="/create">create</a>'
   );
   res.send(html);

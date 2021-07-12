@@ -1,10 +1,11 @@
-const express = require('express')
-var router = express.Router()
+const express = require('express');
+var router = express.Router();
 
 var fs = require('fs');
 var path = require('path');
-var sanitizeHtml = require('sanitize-html')
-var template = require('../lib/template.js')
+var sanitizeHtml = require('sanitize-html');
+var template = require('../lib/template.js');
+var auth = require('../lib/auth.js');
 
 router.get('/create', function (req, res) {
     var title = 'WEB - create'
@@ -19,20 +20,28 @@ router.get('/create', function (req, res) {
               <input type="submit">
           </p>
       </form>
-      `, '');
+      `, '', auth.statusUI(req, res));
     res.send(html);
-  });
-  
-  router.post('/create_process', function (req, res) {
+});
+
+router.post('/create_process', function (req, res) {
+    if (!auth.isOwner(req, res)) {
+        res.redirect('/');
+        return false;
+    }
     var post = req.body;
     var title = post.title;
     var description = post.description;
     fs.writeFile(`data/${title}`, description, 'utf8', function (err) {
         res.redirect(`/topic/${title}`);
     });
-  });
-  
-  router.get('/update/:pageId', function (req, res) {
+});
+
+router.get('/update/:pageId', function (req, res) {
+    if(!auth.isOwner(req,res)){
+        res.redirect('/');
+        return false;
+    }
     var filteredId = path.parse(req.params.pageId).base;
     fs.readFile(`data/${filteredId}`, 'utf8', function (err, description) {
         var title = req.params.pageId;
@@ -50,13 +59,14 @@ router.get('/create', function (req, res) {
               </p>
           </form>
           `,
-            `<a href="/create">create</a> <a href="/topic/update/${title}">update</a>`
+            `<a href="/create">create</a> <a href="/topic/update/${title}">update</a>`,
+            auth.statusUI(req, res)
         );
         res.send(html);
     });
-  });
-  
-  router.post('/update_process', function (req, res) {
+});
+
+router.post('/update_process', function (req, res) {
     var post = req.body;
     var id = post.id;
     var filteredId = path.parse(id).base;
@@ -67,18 +77,22 @@ router.get('/create', function (req, res) {
             res.redirect(`/topic/${title}`);
         });
     });
-  });
-  
-  router.post('/delete_process', function (req, res) {
+});
+
+router.post('/delete_process', function (req, res) {
+    if(!auth.isOwner(req,res)){
+        res.redirect('/');
+        return false;
+    }
     var post = req.body;
     var id = post.id;
     var filteredId = path.parse(id).base;
     fs.unlink(`data/${filteredId}`, function (err) {
         res.redirect('/');
     });
-  });
+});
 
-  router.get('/:pageId/', function (req, res, next) {
+router.get('/:pageId/', function (req, res, next) {
     var filteredId = path.parse(req.params.pageId).base;
     fs.readFile(`data/${filteredId}`, 'utf8', function (err, description) {
         if (err) {
@@ -98,11 +112,12 @@ router.get('/create', function (req, res) {
                 <input type='hidden' name='id' value='${sanitizedTitle}'>
                 <input type='submit' value='delete'>
                 </form>
-                `
+                `,
+                auth.statusUI(req, res)
             );
             res.send(html);
         }
     });
-  });
+});
 
-  module.exports = router;
+module.exports = router;

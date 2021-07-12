@@ -2,15 +2,18 @@ const express = require('express');
 const app = express();
 const port = 3000;
 
-var fs = require('fs');
-var bodyParser = require('body-parser');
-var compression = require('compression');
+const fs = require('fs');
+const bodyParser = require('body-parser');
+const compression = require('compression');
+const helmet = require('helmet');
+
 var topicRouter = require('./routes/topic');
 var indexRouter = require('./routes/index');
 
 //서버 구동 시, middleware가 자동실행
 app.use(express.static('public'));
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(helmet());
+app.use(express.urlencoded({ extended: false }));
 app.use(compression());
 //get 요청에 대해서만 미들웨어를 작동
 app.get('*', function (req, res, next) {

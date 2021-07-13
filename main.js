@@ -22,6 +22,61 @@ app.use(session({
   store: new FileStore()
 }))
 
+//passport.js
+//session 다음에 적어야 함.
+var authData = {
+  email: '1234@naver.com',
+  password: '1111',
+  nickname: 'Guest'
+}
+
+var passport = require('passport')
+  , LocalStrategy = require('passport-local').Strategy;
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+//로그인 시 호출되어, 세션에 데이터를 저장
+passport.serializeUser(function(user, done) {
+  console.log('serializeUser: ', user);
+  done(null, user.email);
+});
+
+//페이지 이동 시, 데이터를 제공
+//done으로 전달된 데이터는 req.user를 통하여 호출 가능.
+passport.deserializeUser(function(id, done) {
+  console.log('deserializeUser: ', id)
+  done(null, authData);
+});
+
+passport.use(new LocalStrategy(
+  {
+    usernameField: 'email',
+    passwordField: 'pwd'
+  },
+  function (username, password, done) {
+    console.log('LocalStrategy', username, password)
+    if (username === authData.email) {
+      console.log('email OK')
+      if (password === authData.password) {
+        console.log('password OK')
+        return done(null, authData);
+      } else {
+        console.log('password ERROR')
+        return done(null, false, { message: 'Incorrect password.' });
+      }
+    } else {
+      console.log('email ERROR')
+      return done(null, false, { message: 'Incorrect email.' });
+    }
+  }
+));
+
+app.post('/auth/login_process',
+  passport.authenticate('local', {
+    successRedirect: '/',
+    failureRedirect: '/auth/login'
+  }));
 
 //get 요청에 대해서만 미들웨어를 작동
 app.get('*', function (req, res, next) {

@@ -6,11 +6,7 @@ var path = require('path');
 var sanitizeHtml = require('sanitize-html')
 var template = require('../lib/template.js')
 
-var authData = {
-  email: '1234@naver.com',
-  password: '1111',
-  nickname: 'Guest'
-}
+
 
 router.get('/login', function (req, res) {
   var title = 'WEB - login'
@@ -26,7 +22,7 @@ router.get('/login', function (req, res) {
       `, '');
   res.send(html);
 });
-
+/*
 router.post('/login_process', function (req, res) {
   var post = req.body;
   var email = post.email;
@@ -41,9 +37,8 @@ router.post('/login_process', function (req, res) {
   } else {
     res.send("Who?");
   }
-
 });
-
+*/
 router.get('/logout', function (req, res) {
   req.session.destroy(function (err) {
     res.redirect('/');

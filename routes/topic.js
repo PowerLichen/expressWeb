@@ -100,7 +100,7 @@ module.exports = function (db) {
         db.query(`UPDATE topic SET title = ?, description = ?, author_id = 1
                   WHERE id = ?`,
             [title, description, filteredId],
-            function(err, result){
+            function (err, result) {
                 res.redirect(`/topic/${filteredId}`);
             });
     });
@@ -113,9 +113,14 @@ module.exports = function (db) {
         var post = req.body;
         var id = post.id;
         var filteredId = path.parse(id).base;
-        fs.unlink(`data/${filteredId}`, function (err) {
-            res.redirect('/');
-        });
+        db.query('DELETE FROM topic WHERE id = ?', [filteredId],
+            function (err, result) {
+                if (err) {
+                    next(err);
+                } else {
+                    res.redirect('/');
+                }
+            })
     });
 
     router.get('/:pageId/', function (req, res, next) {

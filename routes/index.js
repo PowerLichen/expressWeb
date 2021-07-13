@@ -6,13 +6,12 @@ var auth = require('../lib/auth.js');
 
 //route main page
 router.get('/', function (req, res) {
-  console.log('/', req.user);
   var fmsg = req.flash();
   var feedback = '';
   if (fmsg.success){
     feedback=fmsg.success[0];
   }
-  console.log(fmsg)
+
   var title = 'Welcome';
   var description = "HELLO! Welcome my page!";
   var list = template.list(req.list);

@@ -10,6 +10,15 @@ const helmet = require('helmet');
 var session = require('express-session');
 var FileStore = require('session-file-store')(session);
 var flash = require('connect-flash');
+const mysql = require('mysql2');
+
+// DB 연결
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'node',
+  password: 'zxasqw12!@',
+  database: 'opentutorials'
+});
 
 //서버 구동 시, middleware가 자동실행
 app.use(express.static('public'));
@@ -20,36 +29,38 @@ app.use(session({
   secret: 'keyboard cat',
   resave: false,
   saveUninitialized: true,
-  store: new FileStore()
+  store: new FileStore({ path: './sessions/' })
 }));
 app.use(flash());
-app.get('/flash', function(req, res){
-  // Set a flash message by passing the key, followed by the value, to req.flash().
-  req.flash('msg', 'Flash is back!');
-  res.send('flash')
-});
-
-app.get('/flash_display', function(req, res){
-  // Get an array of flash messages by passing the key to req.flash()
-  var fmsg = req.flash();
-  console.log(fmsg);
-  res.send(fmsg)
-});
 
 //passport.js
 //session 다음에 적어야 함.
 var passport = require('./lib/passport')(app);
 
 //get 요청에 대해서만 미들웨어를 작동
+// app.get('*', function (req, res, next) {
+//   fs.readdir('./data', function (error, filelist) {
+//     req.list = filelist;
+//     next();
+//   });
+// });
 app.get('*', function (req, res, next) {
-  fs.readdir('./data', function (error, filelist) {
-    req.list = filelist;
-    next();
-  });
+  db.query(
+    'SELECT * FROM topic',
+    function (err, topics) {
+      req.list = topics;
+      next();      
+    }
+  );
+
+  // fs.readdir('./data', function (error, filelist) {
+  //   req.list = filelist;
+  //   next();
+  // });
 });
 
 //// 라우팅 설정
-var topicRouter = require('./routes/topic');
+var topicRouter = require('./routes/topic')(db);
 var indexRouter = require('./routes/index');
 var authRouter = require('./routes/auth')(passport);
 

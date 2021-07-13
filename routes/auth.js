@@ -7,12 +7,12 @@ var sanitizeHtml = require('sanitize-html')
 var template = require('../lib/template.js')
 
 
-module.exports = function(passport){
+module.exports = function (passport) {
   router.get('/login', function (req, res) {
     var fmsg = req.flash();
     var feedback = '';
-    if (fmsg.error){
-      feedback=fmsg.error[0];
+    if (fmsg.error) {
+      feedback = fmsg.error[0];
     }
     var title = 'WEB - login'
     var list = template.list(req.list)
@@ -28,7 +28,7 @@ module.exports = function(passport){
         `, '');
     res.send(html);
   });
-  
+
   router.post('/login_process',
     passport.authenticate('local', {
       successRedirect: '/',
@@ -36,13 +36,10 @@ module.exports = function(passport){
       failureFlash: true,
       successFlash: 'Hello!'
     }));
-  
+
   router.get('/logout', function (req, res) {
     req.logout();
-    // req.session.destroy(function(err){
-    //   res.redirect('/');
-    // })
-    req.session.save(function(err){
+    req.session.save(function (err) {
       res.redirect('/');
     })
   });

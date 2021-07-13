@@ -9,9 +9,16 @@ var template = require('../lib/template.js')
 
 
 router.get('/login', function (req, res) {
+  var fmsg = req.flash();
+  var feedback = '';
+  if (fmsg.error){
+    feedback=fmsg.error[0];
+  }
+  console.log(fmsg);
   var title = 'WEB - login'
   var list = template.list(req.list)
   var html = template.HTML(title, list, `
+      <div style="color:red;">${feedback}</div>
       <form action="/auth/login_process" method="POST">
         <p><input type="text" name='email' placeholder='email'></p>
         <p><input type="password" name='pwd' placeholder='password'></p>
@@ -40,9 +47,13 @@ router.post('/login_process', function (req, res) {
 });
 */
 router.get('/logout', function (req, res) {
-  req.session.destroy(function (err) {
+  req.logout();
+  // req.session.destroy(function(err){
+  //   res.redirect('/');
+  // })
+  req.session.save(function(err){
     res.redirect('/');
-  });
+  })
 });
 
 module.exports = router;

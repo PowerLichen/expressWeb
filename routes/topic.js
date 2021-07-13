@@ -59,27 +59,36 @@ module.exports = function (db) {
             return false;
         }
         var filteredId = path.parse(req.params.pageId).base;
-        fs.readFile(`data/${filteredId}`, 'utf8', function (err, description) {
-            var title = req.params.pageId;
-            var list = template.list(req.list)
-            var html = template.HTML(title, list,
-                `
-              <form action="/topic/update_process" method="POST">
-                  <input type='hidden' name='id' value='${title}'>
-                  <p><input type="text" name='title' placeholder='title', value='${title}'></p>
-                  <p>
-                      <textarea name='description' placeholder='description'>${description}</textarea>
-                  </p>
-                  <p>
-                      <input type="submit">
-                  </p>
-              </form>
-              `,
-                `<a href="/create">create</a> <a href="/topic/update/${title}">update</a>`,
-                auth.statusUI(req, res)
-            );
-            res.send(html);
-        });
+        db.query(
+            `SELECT * FROM topic WHERE id = ?`, [filteredId],
+            function (err, topic) {
+                if (err) {
+                    next(err);
+                } else {
+                    var pageId = topic[0].id;
+                    var title = topic[0].title;
+                    var description = topic[0].description;
+                    var list = template.list(req.list);
+                    var html = template.HTML(title, list,
+                        `
+                        <form action="/topic/update_process" method="POST">
+                            <input type='hidden' name='id' value='${pageId}'>
+                            <p><input type="text" name='title' placeholder='title', value='${title}'></p>
+                            <p>
+                                <textarea name='description' placeholder='description'>${description}</textarea>
+                            </p>
+                            <p>
+                                <input type="submit">
+                            </p>
+                        </form>
+                        `,
+                        `<a href="/topic/create">create</a> <a href="/topic/update/${pageId}">update</a>`,
+                        auth.statusUI(req, res)
+                    );
+                    res.send(html);
+                }
+            }
+        );
     });
 
     router.post('/update_process', function (req, res) {
@@ -88,11 +97,12 @@ module.exports = function (db) {
         var filteredId = path.parse(id).base;
         var title = post.title;
         var description = post.description;
-        fs.rename(`data/${filteredId}`, `data/${title}`, function (err) {
-            fs.writeFile(`data/${title}`, description, 'utf8', function (err) {
-                res.redirect(`/topic/${title}`);
+        db.query(`UPDATE topic SET title = ?, description = ?, author_id = 1
+                  WHERE id = ?`,
+            [title, description, filteredId],
+            function(err, result){
+                res.redirect(`/topic/${filteredId}`);
             });
-        });
     });
 
     router.post('/delete_process', function (req, res) {
@@ -116,6 +126,7 @@ module.exports = function (db) {
                 if (err) {
                     next(err);
                 } else {
+                    var pageId = topic[0].id;
                     var title = topic[0].title;
                     var description = topic[0].description;
                     var sanitizedTitle = sanitizeHtml(title);
@@ -126,9 +137,9 @@ module.exports = function (db) {
                     var html = template.HTML(sanitizedTitle, list,
                         `<h2>${sanitizedTitle}</h2><p>${sanitizedDescription}</p>`,
                         `<a href="/topic/create">create</a>
-                        <a href="/topic/update/${sanitizedTitle}">update</a>
+                        <a href="/topic/update/${pageId}">update</a>
                         <form action='/topic/delete_process' method='post'>
-                            <input type='hidden' name='id' value='${sanitizedTitle}'>
+                            <input type='hidden' name='id' value='${pageId}'>
                             <input type='submit' value='delete'>
                         </form>
                     `,

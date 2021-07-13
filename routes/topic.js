@@ -35,9 +35,22 @@ module.exports = function (db) {
         var post = req.body;
         var title = post.title;
         var description = post.description;
-        fs.writeFile(`data/${title}`, description, 'utf8', function (err) {
-            res.redirect(`/topic/${title}`);
-        });
+        db.query(
+            `INSERT INTO topic(title, description, created, author_id)
+             VALUES(?, ?, NOW(), ?)`,
+            [title, description, 1],
+            function (err, result) {
+                if (err) {
+                    console.log(err);
+                    next(err);
+                } else {
+                    res.redirect(`/topic/${result.insertId}`);
+                }
+            }
+        )
+        // fs.writeFile(`data/${title}`, description, 'utf8', function (err) {
+        //     
+        // });
     });
 
     router.get('/update/:pageId', function (req, res) {
@@ -98,7 +111,7 @@ module.exports = function (db) {
     router.get('/:pageId/', function (req, res, next) {
         var filteredId = path.parse(req.params.pageId).base;
         db.query(
-            `SELECT * FROM topic WHERE id = ?`,[filteredId],
+            `SELECT * FROM topic WHERE id = ?`, [filteredId],
             function (err, topic) {
                 if (err) {
                     next(err);

@@ -1,3 +1,5 @@
-## Ignore Folder
-# Test Folder
+# Dependency
+node_modules/
+# misc
 nodejs/
+sessions/

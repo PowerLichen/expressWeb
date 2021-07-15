@@ -3,7 +3,6 @@ var router = express.Router()
 
 var template = require('../lib/template.js')
 
-
 module.exports = function (passport) {
   router.get('/login', function (req, res) {
     var fmsg = req.flash();

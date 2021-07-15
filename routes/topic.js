@@ -6,15 +6,13 @@ var sanitizeHtml = require('sanitize-html');
 var template = require('../lib/template.js');
 var auth = require('../lib/auth.js');
 
-
-
 module.exports = function (db) {
     router.get('/create', function (req, res) {
         db.query('SELECT * FROM author', function (err, authors) {
             var title = 'WEB - create';
             var list = template.list(req.list);
             var authorSelector = template.authorSelector(authors);
-            var html = template.HTML(title, list, `
+            var html = template.HTML(sanitizeHtml(title), list, `
             <form action="/topic/create_process" method="POST">
                 <p><input type="text" name='title' placeholder='title'></p>
                 <p>
@@ -83,9 +81,9 @@ module.exports = function (db) {
                             `
                             <form action="/topic/update_process" method="POST">
                                 <input type='hidden' name='id' value='${pageId}'>
-                                <p><input type="text" name='title' placeholder='title', value='${title}'></p>
+                                <p><input type="text" name='title' placeholder='title', value='${sanitizeHtml(title)}'></p>
                                 <p>
-                                    <textarea name='description' placeholder='description'>${description}</textarea>
+                                    <textarea name='description' placeholder='description'>${sanitizeHtml(description)}</textarea>
                                 </p>
                                 <p>
                                     ${authorSelector}
@@ -154,6 +152,7 @@ module.exports = function (db) {
                     var description = topic[0].description;
                     var sanitizedTitle = sanitizeHtml(title);
                     var sanitizedDescription = sanitizeHtml(description, {
+                        // 본문의 특정 태그를 허용(h1 태그)
                         allowedTags: ['h1']
                     });
                     var list = template.list(req.list)

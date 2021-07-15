@@ -11,7 +11,6 @@ router.get('/', function (req, res) {
   if (fmsg.success){
     feedback=fmsg.success[0];
   }
-
   var title = 'Welcome';
   var description = "HELLO! Welcome my page!";
   var list = template.list(req.list);

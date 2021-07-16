@@ -32,8 +32,9 @@ npm install
 
 ## 개발 환경 설정
 1. mysql을 설치하고 데이터베이스을 생성한다.  
-2. 생성한 데이터베이스에 접근 가능하도록 /lib/db.js의 const db 항목을 입력한다.
-3. author, topic 테이블을 생성한다.
+2. 생성한 데이터베이스에 접근 가능하도록 /lib/db.template.js의 const db 항목을 입력한다.
+3. db.template.js 파일의 파일명을 db.js로 변경한다.
+4. author, topic 테이블을 생성한다.
     ```sql
     // author 테이블
     CREATE TABLE `author` (
@@ -53,7 +54,7 @@ npm install
         PRIMARY KEY (`id`)
     );
     ```
-4. author 목록을 미리 생성한다.
+5. author 목록을 미리 생성한다.
     
     예시:
     ```sql

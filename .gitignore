@@ -3,3 +3,6 @@ node_modules/
 # misc
 nodejs/
 sessions/
+
+# credential file
+lib/db.js
